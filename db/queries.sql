@@ -17,17 +17,64 @@ LEFT JOIN employee m ON e.manager_id = m.id;
 
 -- Add a new department
 INSERT INTO department (name)
-VALUES ('New Department Name');
+VALUES ($1);
 
 -- Add a new role
 INSERT INTO role (title, salary, department_id)
-VALUES ('New Role Title', 50000, 1); -- Replace with actual values
+VALUES ($1, $2, $3);
 
 -- Add a new employee
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ('First Name', 'Last Name', 1, NULL); -- Replace with actual values
+VALUES ($1, $2, $3, $4);
 
 -- Update an employee's role
 UPDATE employee
-SET role_id = 2 -- Replace with actual role_id
-WHERE id = 1; -- Replace with actual employee_id
+SET role_id = $1
+WHERE id = $2;
+
+-- Update an employee's manager
+UPDATE employee
+SET manager_id = $1
+WHERE id = $2;
+/*
+-- View employees by manager
+SELECT e.first_name,
+       e.last_name,
+       CONCAT(m.first_name, ' ', m.last_name) AS manager
+FROM   employee e
+LEFT JOIN employee m ON e.manager_id = m.id
+WHERE  m.id = $1;
+*/
+
+/*
+-- View employees by department
+SELECT e.first_name, e.last_name, d.name AS department
+FROM employee e
+JOIN role r ON e.role_id = r.id
+JOIN department d ON r.department_id = d.id
+WHERE d.name = $1;
+*/
+
+-- Delete a department
+DELETE FROM department
+WHERE id = $1;
+
+-- Delete a role
+DELETE FROM role
+WHERE id = $1;
+
+-- Delete an employee
+DELETE FROM employee
+WHERE id = $1;
+
+/*
+-- Delete all employees in a specific department
+DELETE FROM employee
+WHERE department_id = $1;
+*/
+
+-- View the total utilized budget of a department
+SELECT d.name AS department, SUM(r.salary) AS utilized_budget
+FROM role r
+JOIN department d ON r.department_id = d.id
+GROUP BY d.name;
