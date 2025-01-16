@@ -36,7 +36,7 @@ WHERE id = $2;
 UPDATE employee
 SET manager_id = $1
 WHERE id = $2;
-/*
+
 -- View employees by manager
 SELECT e.first_name,
        e.last_name,
@@ -44,16 +44,13 @@ SELECT e.first_name,
 FROM   employee e
 LEFT JOIN employee m ON e.manager_id = m.id
 WHERE  m.id = $1;
-*/
 
-/*
 -- View employees by department
 SELECT e.first_name, e.last_name, d.name AS department
 FROM employee e
 JOIN role r ON e.role_id = r.id
 JOIN department d ON r.department_id = d.id
 WHERE d.name = $1;
-*/
 
 -- Delete a department
 DELETE FROM department
@@ -67,14 +64,9 @@ WHERE id = $1;
 DELETE FROM employee
 WHERE id = $1;
 
-/*
--- Delete all employees in a specific department
-DELETE FROM employee
-WHERE department_id = $1;
-*/
-
--- View the total utilized budget of a department
+-- View the total utilized budget of each department, taking into account the number of employees
 SELECT d.name AS department, SUM(r.salary) AS utilized_budget
-FROM role r
+FROM employee e
+JOIN role r ON e.role_id = r.id
 JOIN department d ON r.department_id = d.id
 GROUP BY d.name;
