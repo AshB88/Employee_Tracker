@@ -96,6 +96,15 @@ const utilizedBudget = async (department_id: number) => {
     return res.rows;
 };
 
+const getManagers = async () => {
+    const res = await pool.query(`
+        SELECT id, e.first_name, e.last_name
+        FROM employee e
+        WHERE is_manager = TRUE
+    `);
+    return res.rows;
+};
+
 
 export {
     getDepartments,
@@ -111,5 +120,6 @@ export {
     deleteDepartment,
     deleteRole,
     deleteEmployee,
-    utilizedBudget
+    utilizedBudget,
+    getManagers
 }

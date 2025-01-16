@@ -71,3 +71,8 @@ JOIN role r ON e.role_id = r.id
 JOIN department d ON r.department_id = d.id
 WHERE d.id = $1
 GROUP BY d.name
+
+-- List of employees who are managers
+SELECT id, e.first_name, e.last_name
+FROM employee e
+WHERE is_manager = TRUE;

@@ -15,6 +15,7 @@ import {
     deleteRole,
     deleteEmployee,
     utilizedBudget,
+    getManagers
 } from './queries.js';
 
 await connectToDb();
@@ -40,6 +41,7 @@ const mainMenu = async () => {
                 'Delete a role',
                 'Delete an employee',
                 'View the utilized budget of a department',
+                'View all managers',
                 'Exit'
             ]
         }
@@ -114,6 +116,15 @@ const mainMenu = async () => {
                         message: 'Please enter the role ID:'
                     }
                 ]);
+
+                const isManagerAnswer = await inquirer.prompt([
+                    {
+                        type: 'confirm',
+                        name: 'is_manager',
+                        message: 'Is this employee a manager?',
+                        default: false
+                    }
+                ]);
     
                 const managerChoice = await inquirer.prompt([
                     {
@@ -126,26 +137,17 @@ const mainMenu = async () => {
     
                 let manager_id = null;
                 if (managerChoice.assignManager) {
-                    const employees = await getEmployees();
+                    const managers = await getManagers();
                     const managerAnswer = await inquirer.prompt([
                         {
                             type: 'list',
                             name: 'manager_id',
                             message: 'Please select the manager:',
-                            choices: employees.map(emp => ({ name: `${emp.first_name} ${emp.last_name}`, value: emp.id }))
+                            choices: managers.map(manager => ({ name: `${manager.first_name} ${manager.last_name}`, value: manager.id }))
                         }
                     ]);
                     manager_id = managerAnswer.manager_id;
                 }
-    
-                const isManagerAnswer = await inquirer.prompt([
-                    {
-                        type: 'confirm',
-                        name: 'is_manager',
-                        message: 'Is this employee a manager?',
-                        default: false
-                    }
-                ]);
     
                 await addEmployee(
                     employeeAnswer.first_name,
@@ -170,6 +172,7 @@ const mainMenu = async () => {
                         message: 'Please enter the ID of the roll to be assigned:'
                     }
                 ]);
+                
                 await updateEmployeeRole(
                     updateRoleAnswer.employee_id,
                     updateRoleAnswer.role_id
@@ -264,6 +267,10 @@ const mainMenu = async () => {
                     }
                 ]);
                 console.table(await utilizedBudget(parseInt(utilizedBudgetAnswer.department_id)));
+                mainMenu();
+                break;
+            case 'View all managers':
+                console.table(await getManagers());
                 mainMenu();
                 break;
             case 'Exit':
