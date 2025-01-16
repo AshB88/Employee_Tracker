@@ -38,8 +38,8 @@ const addRole = async (title: string, salary: number, department_id: number) => 
     await pool.query('INSERT INTO role (title, salary, department_id) VALUES ($1, $2, $3)', [title, salary, department_id]);
 };
 
-const addEmployee = async (first_name: string, last_name: string, role_id: number, manager_id: number) => {
-    await pool.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)', [first_name, last_name, role_id, manager_id]);
+const addEmployee = async (first_name: string, last_name: string, role_id: number, manager_id: number | null, is_manager: boolean) => {
+    await pool.query('INSERT INTO employee (first_name, last_name, role_id, manager_id, is_manager) VALUES ($1, $2, $3, $4, $5)', [first_name, last_name, role_id, manager_id, is_manager]);
 };
 
 const updateEmployeeRole = async (employee_id: number, role_id: number) => {
@@ -50,7 +50,6 @@ const updateEmployeeManager = async (employee_id: number, manager_id: number) =>
     await pool.query('UPDATE employee SET manager_id = $1 WHERE id = $2', [manager_id, employee_id]);
 };
 
-/*
 const employeesByManager = async (manager_id: number) => {
     const res = await pool.query(`
         SELECT e.id, e.first_name, e.last_name, CONCAT(m.first_name, ' ', m.last_name) AS manager
@@ -59,10 +58,8 @@ const employeesByManager = async (manager_id: number) => {
         WHERE e.manager_id = $1
     `, [manager_id]);
     return res.rows;
-}
-*/
+};
 
-/*
 const employeesByDepartment = async (department_id: number) => {
     const res = await pool.query(`
         SELECT e.id, e.first_name, e.last_name, d.name AS department
@@ -73,7 +70,6 @@ const employeesByDepartment = async (department_id: number) => {
     `, [department_id]);
     return res.rows;
 };
-*/
 
 const deleteDepartment = async (department_id: number) => {
     await pool.query('DELETE FROM department WHERE id = $1', [department_id]);
@@ -87,11 +83,6 @@ const deleteEmployee = async (employee_id: number) => {
     await pool.query('DELETE FROM employee WHERE id = $1', [employee_id]);
 };
 
-/*
-const deleteEmployeesByDepartment = async (department_id: number) => {
-    await pool.query('DELETE FROM employee WHERE role_id IN (SELECT id FROM role WHERE department_id = $1)', [department_id]);
-};
-*/
 
 const utilizedBudget = async (department_id: number) => {
     const res = await pool.query(`
@@ -114,6 +105,8 @@ export {
     addEmployee,
     updateEmployeeRole,
     updateEmployeeManager,
+    employeesByManager,
+    employeesByDepartment,
     deleteDepartment,
     deleteRole,
     deleteEmployee,

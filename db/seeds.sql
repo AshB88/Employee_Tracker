@@ -26,19 +26,18 @@ VALUES ('Software Engineer', 100000, 1),
 -- The manager_id field is a foreign key that references the id of another employee who is the manager.
 -- If the employee does not have a manager, the manager_id is set to NULL.
 
-INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ('John', 'Doe', 2, NULL), -- Senior Software Engineer
-       ('Alice', 'Johnson', 4, NULL), -- Senior Accountant      
-       ('Ivy', 'Lee', 12, NULL), -- HR Manager
-       ('Karen', 'Black', 14, NULL), -- Customer Service Manager
-       ('Jane', 'Doe', 1, 1), -- Software Engineer, managed by John Doe
-       ('Eve', 'Williams', 8, NULL), -- Sales Manager 
-       ('Bob', 'Smith', 3, 3), -- Accountant, managed by Alice Johnson
-       ('David', 'Wilson', 5, 5), -- Lawyer, managed by Charlie Brown
-       ('Grace', 'Hopper', 10, NULL), -- Senior Marketing Manager
-       ('Frank', 'Miller', 7, 7), -- Salesperson, managed by Eve Williams
-       ('Hank', 'Green', 9, 9), -- Marketing Manager, managed by Grace Hopper
-       ('Jack', 'White', 11, 11), -- HR Specialist, managed by Ivy Lee
-       ('Charlie', 'Brown', 6, NULL), -- Senior Lawyer
-       ('Leo', 'Brown', 13, 13), -- Customer Service Rep, managed by Karen Black
-       
+INSERT INTO employee (first_name, last_name, role_id, manager_id, is_manager)
+VALUES ('John', 'Doe', 2, NULL, TRUE), -- Senior Software Engineer
+       ('Alice', 'Johnson', 4, NULL, TRUE), -- Senior Accountant
+       ('Ivy', 'Lee', 12, NULL, TRUE), -- HR Manager
+       ('Karen', 'Black', 14, NULL, TRUE), -- Customer Service Manager
+       ('Jane', 'Doe', 1, 1, FALSE), -- Software Engineer, managed by John Doe
+       ('Eve', 'Williams', 8, NULL, TRUE), -- Sales Manager
+       ('Bob', 'Smith', 3, 2, FALSE), -- Accountant, managed by Alice Johnson
+       ('David', 'Wilson', 5, NULL, FALSE), -- Lawyer
+       ('Grace', 'Hopper', 10, NULL, TRUE), -- Senior Marketing Manager
+       ('Frank', 'Miller', 7, 6, FALSE), -- Salesperson, managed by Eve Williams
+       ('Hank', 'Green', 9, 9, FALSE), -- Marketing Manager, managed by Grace Hopper
+       ('Jack', 'White', 11, 3, FALSE), -- HR Specialist, managed by Ivy Lee
+       ('Charlie', 'Brown', 6, NULL, TRUE), -- Senior Lawyer
+       ('Leo', 'Brown', 13, 4, FALSE); -- Customer Service Rep, managed by Karen Black
