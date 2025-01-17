@@ -42,8 +42,8 @@ const addEmployee = async (first_name: string, last_name: string, role_id: numbe
     await pool.query('INSERT INTO employee (first_name, last_name, role_id, manager_id, is_manager) VALUES ($1, $2, $3, $4, $5)', [first_name, last_name, role_id, manager_id, is_manager]);
 };
 
-const updateEmployeeRole = async (employee_id: number, role_id: number) => {
-    await pool.query('UPDATE employee SET role_id = $1 WHERE id = $2', [role_id, employee_id]);
+const updateEmployeeRole = async (employee_id: number, role_id: number, is_manager: boolean) => {
+    await pool.query('UPDATE employee SET role_id = $1, is_manager = $2 WHERE id = $3', [role_id, is_manager, employee_id]);
 };
 
 const updateEmployeeManager = async (employee_id: number, manager_id: number) => {
@@ -80,6 +80,9 @@ const deleteRole = async (role_id: number) => {
 };
 
 const deleteEmployee = async (employee_id: number) => {
+    // Set manager_id to NULL for employees managed by the employee to be deleted
+    await pool.query('UPDATE employee SET manager_id = NULL WHERE manager_id = $1', [employee_id]);
+    // Delete the employee
     await pool.query('DELETE FROM employee WHERE id = $1', [employee_id]);
 };
 
