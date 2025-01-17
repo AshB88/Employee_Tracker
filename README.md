@@ -53,7 +53,7 @@ To install and set up this project, follow these steps:
 
 4. **Repeat or exit**:
 
-    After viewing the results, you will be returned to the main menu to select another action or exit the application.
+    After following the promts, you will be returned to the main menu to select another action or exit the application.
 
 5. **Important Notes**:
 
