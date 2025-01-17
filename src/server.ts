@@ -241,7 +241,7 @@ const mainMenu = async () => {
                         type: 'list',
                         name: 'manager_id',
                         message: 'Please select the new manager:',
-                        choices: managers.map(manager => ({ name: `${manager.first_name} ${manager.last_name}`, value: manager.id })).concat({ name: 'Back', value: 'back' })
+                        choices: managers.map(manager => ({ name: `${manager.first_name} ${manager.last_name}`, value: manager.id })).concat({ name: 'None', value: null }).concat({ name: 'Back', value: 'back' })
                     }
                 ]);
 
