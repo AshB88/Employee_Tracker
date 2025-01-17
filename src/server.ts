@@ -85,10 +85,12 @@ const mainMenu = async () => {
                         message: 'Please enter the role salary:'
                     },
                     {
-                        type: 'input',
+                        type: 'list',
                         name: 'department_id',
-                        message: 'Please enter the department ID:'
-                    }
+                        message: 'Please select the department:',
+                        choices: (await getDepartments()).map(department => ({ name: department.name, value: department.id }))
+                    },
+                
                 ]);
                 await addRole(
                     roleAnswer.title,
@@ -110,12 +112,22 @@ const mainMenu = async () => {
                         name: 'last_name',
                         message: 'Please enter the employee last name:'
                     },
+                ]);
+
+                const availableRoles = await getRoles();
+                const availableroleAnswer = await inquirer.prompt([
                     {
-                        type: 'input',
+                        type: 'list',
                         name: 'role_id',
-                        message: 'Please enter the role ID:'
+                        message: 'Please select the role:',
+                        choices: availableRoles.map(role => ({ name: role.title, value: role.id })).concat({ name: 'Back', value: 'back' })
                     }
                 ]);
+
+                if (availableroleAnswer.role_id === 'back') {
+                    mainMenu();
+                    break;
+                }
 
                 const isManagerAnswer = await inquirer.prompt([
                     {
@@ -152,7 +164,7 @@ const mainMenu = async () => {
                 await addEmployee(
                     employeeAnswer.first_name,
                     employeeAnswer.last_name,
-                    parseInt(employeeAnswer.role_id),
+                    availableroleAnswer.role_id,
                     manager_id,
                     isManagerAnswer.is_manager
                 );
@@ -160,18 +172,35 @@ const mainMenu = async () => {
                 mainMenu();
                 break;
             case 'Update an employee role':
-                const updateRoleAnswer = await inquirer.prompt([
+                const employees = await getEmployees();
+                const updateEmployeeAnswer = await inquirer.prompt([
                     {
-                        type: 'input',
+                        type: 'list',
                         name: 'employee_id',
-                        message: 'Please enter the employee ID:'
-                    },
-                    {
-                        type: 'input',
-                        name: 'role_id',
-                        message: 'Please enter the ID of the roll to be assigned:'
+                        message: 'Please select the employee:',
+                        choices: employees.map(employee => ({ name: `${employee.first_name} ${employee.last_name}`, value: employee.id })).concat({ name: 'Back', value: 'back' })
                     }
                 ]);
+
+                if (updateEmployeeAnswer.employee_id === 'back') {
+                    mainMenu();
+                    break;
+                }
+            
+                const roles = await getRoles();
+                const updateRoleAnswer = await inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'role_id',
+                        message: 'Please select the new role:',
+                        choices: roles.map(role => ({ name: role.title, value: role.id })).concat({ name: 'Back', value: 'back' })
+                    }
+                ]);
+
+                if (updateRoleAnswer.role_id === 'back') {
+                    mainMenu();
+                    break;
+                }
 
                 const isManagerUpdateAnswer = await inquirer.prompt([
                     {
@@ -183,7 +212,7 @@ const mainMenu = async () => {
                 ]);
                 
                 await updateEmployeeRole(
-                    updateRoleAnswer.employee_id,
+                    updateEmployeeAnswer.employee_id,
                     updateRoleAnswer.role_id,
                     isManagerUpdateAnswer.is_manager,
                 );
@@ -191,13 +220,20 @@ const mainMenu = async () => {
                 mainMenu();
                 break;
             case 'Update an employee manager':
-                const updateManagerAnswer = await inquirer.prompt([
+                const currentEmployees = await getEmployees();
+                const employeeSelection = await inquirer.prompt([
                     {
-                        type: 'input',
+                        type: 'list',
                         name: 'employee_id',
-                        message: 'Please enter the employee ID:'
+                        message: 'Please select the employee:',
+                        choices: currentEmployees.map(employee => ({ name: `${employee.first_name} ${employee.last_name}`, value: employee.id })).concat({ name: 'Back', value: 'back' })
                     }
                 ]);
+
+                if (employeeSelection.employee_id === 'back') {
+                    mainMenu();
+                    break;
+                }
 
                 const managers = await getManagers();
                 const managerAnswer = await inquirer.prompt([
@@ -205,16 +241,20 @@ const mainMenu = async () => {
                         type: 'list',
                         name: 'manager_id',
                         message: 'Please select the new manager:',
-                        choices: managers.map(manager => ({ name: `${manager.first_name} ${manager.last_name}`, value: manager.id }))
+                        choices: managers.map(manager => ({ name: `${manager.first_name} ${manager.last_name}`, value: manager.id })).concat({ name: 'Back', value: 'back' })
                     }
                 ]);
 
-                await updateEmployeeManager(
-                    parseInt(updateManagerAnswer.employee_id),
-                    parseInt(managerAnswer.manager_id)
-                );
-                console.log('Employee manager updated successfully');
-                mainMenu();
+                if (managerAnswer.manager_id === 'back') {
+                    mainMenu();
+                } else {
+                    await updateEmployeeManager(
+                        employeeSelection.employee_id,
+                        managerAnswer.manager_id
+                    );
+                    console.log('Employee manager updated successfully');
+                    mainMenu();
+                }
                 break;
             case 'View employees by manager':
                 const employeeManagers = await getManagers();
@@ -223,11 +263,17 @@ const mainMenu = async () => {
                         type: 'list',
                         name: 'manager_id',
                         message: 'Please select the manager:',
-                        choices: employeeManagers.map(manager => ({ name: `${manager.first_name} ${manager.last_name}`, value: manager.id }))
+                        choices: employeeManagers.map(manager => ({ name: `${manager.first_name} ${manager.last_name}`, value: manager.id })).concat({ name: 'Back', value: 'back' })
                     }
                 ]);
-                console.table(await employeesByManager(employeesByManagerAnswer.manager_id));
-                mainMenu();
+
+                if (employeesByManagerAnswer.manager_id === 'back') {
+                    mainMenu();
+                    break;
+                } else {
+                    console.table(await employeesByManager(employeesByManagerAnswer.manager_id));
+                    mainMenu();
+                }
                 break;
             case 'View employees by department':
                 const departments = await getDepartments();
@@ -236,58 +282,91 @@ const mainMenu = async () => {
                         type: 'list',
                         name: 'department_id',
                         message: 'Please select the department:',
-                        choices: departments.map(department => ({ name: department.name, value: department.id }))
+                        choices: departments.map(department => ({ name: department.name, value: department.id })).concat({name: 'Back', value: 'back'})
                     }
                 ]);
+
+                if (employeesByDepartmentAnswer.department_id === 'back') {
+                    mainMenu();
+                } else {
                 console.table(await employeesByDepartment(employeesByDepartmentAnswer.department_id));
                 mainMenu();
+                }
                 break;
             case 'Delete a department':
+                const departmentsToDelete = await getDepartments();
                 const deleteDepartmentAnswer = await inquirer.prompt([
                     {
-                        type: 'input',
-                        name: 'id',
-                        message: 'Please enter the department ID:'
+                        type: 'list',
+                        name: 'department_id',
+                        message: 'Please select a department to delete:',
+                        choices: departmentsToDelete.map(department => ({ name: department.name, value: department.id })).concat({ name: 'Back', value: 'back' })
                     }
                 ]);
-                await deleteDepartment(deleteDepartmentAnswer.id);
-                console.log('Department deleted successfully');
-                mainMenu();
+
+                if (deleteDepartmentAnswer.department_id === 'back') {
+                    mainMenu();
+                } else {
+                    await deleteDepartment(deleteDepartmentAnswer.department_id);
+                    console.log('Department deleted successfully');
+                    mainMenu();
+                }
                 break;
             case 'Delete a role':
+                const rolesToDelete = await getRoles();
                 const deleteRoleAnswer = await inquirer.prompt([
                     {
-                        type: 'input',
-                        name: 'id',
-                        message: 'Please enter the role ID:'
+                        type: 'list',
+                        name: 'role_id',
+                        message: 'Please select a role to delete:',
+                        choices: rolesToDelete.map(role => ({ name: role.title, value: role.id })).concat({ name: 'Back', value: 'back' })
                     }
                 ]);
-                await deleteRole(deleteRoleAnswer.id);
-                console.log('Role deleted successfully');
-                mainMenu();
+
+                if (deleteRoleAnswer.role_id === 'back') {
+                    mainMenu();
+                } else {
+                    await deleteRole(deleteRoleAnswer.role_id);
+                    console.log('Role deleted successfully');
+                    mainMenu();
+                }
                 break;
             case 'Delete an employee':
+                const employeesToDelete = await getEmployees();
                 const deleteEmployeeAnswer = await inquirer.prompt([
                     {
-                        type: 'input',
-                        name: 'id',
-                        message: 'Please enter the employee ID:'
+                        type: 'list',
+                        name: 'employee_id',
+                        message: 'Please select an employee to delete:',
+                        choices: employeesToDelete.map(employee => ({ name: `${employee.first_name} ${employee.last_name}`, value: employee.id })).concat({ name: 'Back', value: 'back' })
                     }
                 ]);
-                await deleteEmployee(deleteEmployeeAnswer.id);
-                console.log('Employee deleted successfully');
-                mainMenu();
+            
+                if (deleteEmployeeAnswer.employee_id === 'back') {
+                    mainMenu();
+                } else {
+                    await deleteEmployee(deleteEmployeeAnswer.employee_id);
+                    console.log('Employee deleted successfully');
+                    mainMenu();
+                }
                 break;
             case 'View the utilized budget of a department':
+                const departmentsForBudget = await getDepartments();
                 const utilizedBudgetAnswer = await inquirer.prompt([
                     {
-                        type: 'input',
+                        type: 'list',
                         name: 'department_id',
-                        message: 'Please enter the department ID:'
+                        message: 'Please select the department:',
+                        choices: departmentsForBudget.map(department => ({ name: department.name, value: department.id })).concat({ name: 'Back', value: 'back' })
                     }
                 ]);
-                console.table(await utilizedBudget(parseInt(utilizedBudgetAnswer.department_id)));
-                mainMenu();
+            
+                if (utilizedBudgetAnswer.department_id === 'back') {
+                    mainMenu();
+                } else {
+                    console.table(await utilizedBudget(utilizedBudgetAnswer.department_id));
+                    mainMenu();
+                }
                 break;
             case 'View all managers':
                 console.table(await getManagers());
