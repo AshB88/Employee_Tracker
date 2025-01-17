@@ -60,7 +60,7 @@ To install and set up this project, follow these steps:
     When deleting a department, you must first delete the employees and then the roles associated with that department. Similarly, if deleting a role, the employees associated with that role must also first be deleted.
 
 **Walkthrough**:  
- A demonstration of the application in use can be found [here]().
+ A demonstration of the application in use can be found [here](https://drive.google.com/file/d/1mMlmI6IcqoYhlG_OeL85Tp55BBnBA6PF/view?usp=sharing).
 
 ## Contributing
 Contributions are welcome and appreciated! If you would like to contribute to this project, please follow these steps:
