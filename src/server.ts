@@ -15,6 +15,7 @@ import {
     deleteRole,
     deleteEmployee,
     utilizedBudget,
+    getManagers
 } from './queries.js';
 
 await connectToDb();
@@ -40,6 +41,7 @@ const mainMenu = async () => {
                 'Delete a role',
                 'Delete an employee',
                 'View the utilized budget of a department',
+                'View all managers',
                 'Exit'
             ]
         }
@@ -114,6 +116,15 @@ const mainMenu = async () => {
                         message: 'Please enter the role ID:'
                     }
                 ]);
+
+                const isManagerAnswer = await inquirer.prompt([
+                    {
+                        type: 'confirm',
+                        name: 'is_manager',
+                        message: 'Is this employee a manager?',
+                        default: false
+                    }
+                ]);
     
                 const managerChoice = await inquirer.prompt([
                     {
@@ -126,26 +137,17 @@ const mainMenu = async () => {
     
                 let manager_id = null;
                 if (managerChoice.assignManager) {
-                    const employees = await getEmployees();
+                    const managers = await getManagers();
                     const managerAnswer = await inquirer.prompt([
                         {
                             type: 'list',
                             name: 'manager_id',
                             message: 'Please select the manager:',
-                            choices: employees.map(emp => ({ name: `${emp.first_name} ${emp.last_name}`, value: emp.id }))
+                            choices: managers.map(manager => ({ name: `${manager.first_name} ${manager.last_name}`, value: manager.id }))
                         }
                     ]);
                     manager_id = managerAnswer.manager_id;
                 }
-    
-                const isManagerAnswer = await inquirer.prompt([
-                    {
-                        type: 'confirm',
-                        name: 'is_manager',
-                        message: 'Is this employee a manager?',
-                        default: false
-                    }
-                ]);
     
                 await addEmployee(
                     employeeAnswer.first_name,
@@ -170,9 +172,20 @@ const mainMenu = async () => {
                         message: 'Please enter the ID of the roll to be assigned:'
                     }
                 ]);
+
+                const isManagerUpdateAnswer = await inquirer.prompt([
+                    {
+                        type: 'confirm',
+                        name: 'is_manager',
+                        message: 'Is this employee a manager?',
+                        default: false
+                    }
+                ]);
+                
                 await updateEmployeeRole(
                     updateRoleAnswer.employee_id,
-                    updateRoleAnswer.role_id
+                    updateRoleAnswer.role_id,
+                    isManagerUpdateAnswer.is_manager,
                 );
                 console.log('Employee role updated successfully');
                 mainMenu();
@@ -183,37 +196,47 @@ const mainMenu = async () => {
                         type: 'input',
                         name: 'employee_id',
                         message: 'Please enter the employee ID:'
-                    },
-                    {
-                        type: 'input',
-                        name: 'manager_id',
-                        message: 'Please enter the manager ID:'
                     }
                 ]);
+
+                const managers = await getManagers();
+                const managerAnswer = await inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'manager_id',
+                        message: 'Please select the new manager:',
+                        choices: managers.map(manager => ({ name: `${manager.first_name} ${manager.last_name}`, value: manager.id }))
+                    }
+                ]);
+
                 await updateEmployeeManager(
-                    updateManagerAnswer.employee_id,
-                    updateManagerAnswer.manager_id
+                    parseInt(updateManagerAnswer.employee_id),
+                    parseInt(managerAnswer.manager_id)
                 );
                 console.log('Employee manager updated successfully');
                 mainMenu();
                 break;
             case 'View employees by manager':
+                const employeeManagers = await getManagers();
                 const employeesByManagerAnswer = await inquirer.prompt([
                     {
-                        type: 'input',
+                        type: 'list',
                         name: 'manager_id',
-                        message: 'Please enter the manager ID:'
+                        message: 'Please select the manager:',
+                        choices: employeeManagers.map(manager => ({ name: `${manager.first_name} ${manager.last_name}`, value: manager.id }))
                     }
                 ]);
                 console.table(await employeesByManager(employeesByManagerAnswer.manager_id));
                 mainMenu();
                 break;
             case 'View employees by department':
+                const departments = await getDepartments();
                 const employeesByDepartmentAnswer = await inquirer.prompt([
                     {
-                        type: 'input',
+                        type: 'list',
                         name: 'department_id',
-                        message: 'Please enter the department ID:'
+                        message: 'Please select the department:',
+                        choices: departments.map(department => ({ name: department.name, value: department.id }))
                     }
                 ]);
                 console.table(await employeesByDepartment(employeesByDepartmentAnswer.department_id));
@@ -266,11 +289,16 @@ const mainMenu = async () => {
                 console.table(await utilizedBudget(parseInt(utilizedBudgetAnswer.department_id)));
                 mainMenu();
                 break;
+            case 'View all managers':
+                console.table(await getManagers());
+                mainMenu();
+                break;
             case 'Exit':
                 process.exit();
         }
     } catch (err) {
         console.error('An error has occurred:', err);
+        mainMenu();
     }
 };
 
